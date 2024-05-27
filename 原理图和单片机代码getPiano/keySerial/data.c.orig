@@ -1,0 +1,151 @@
+#include <reg51.h>
+#include "data.h"
+#include "anjian.h"
+#include "lcd.h"
+
+sbit SPEAKER = P2^7; //蜂鸣器
+sbit shenghao = P3^6;//#
+sbit shift = P3^7;//shift 按下后第3，4，八度
+unsigned char *pmsc; //音乐数据指针
+unsigned char tune_TH, tune_TL; //定时器 0 的初值预设，产生不同频率的声音
+unsigned char dura_TH, dura_TL; //定时器 1 的初值预设，决定声音的长度
+unsigned char new_note; //是否开始一个新音符
+unsigned char repeat;
+unsigned char code music_freq_tab[64]= { //音符定时器值表，每个八度 16 个字节
+    0xff, 0xea, //0 休止符，第一个八度
+    255-FREQ/24/131/256, 256-FREQ/24/131%256, //1 do 低字节
+    255-FREQ/24/147/256, 256-FREQ/24/147%256, //2 re
+    255-FREQ/24/165/256, 256-FREQ/24/165%256, //3 mi
+    255-FREQ/24/175/256, 256-FREQ/24/175%256, //4 fa
+    255-FREQ/24/196/256, 256-FREQ/24/196%256, //5 suo
+    255-FREQ/24/221/256, 256-FREQ/24/221%256, //6 la
+    255-FREQ/24/248/256, 256-FREQ/24/248%256, //7 xi
+    0xff, 0xea, //0 休止符，第二个八度
+    255-FREQ/24/262/256, 256-FREQ/24/262%256, //1 do
+    255-FREQ/24/294/256, 256-FREQ/24/294%256, //2 re
+    255-FREQ/24/330/256, 256-FREQ/24/330%256, //3 mi
+    255-FREQ/24/350/256, 256-FREQ/24/350%256, //4 fa
+    255-FREQ/24/393/256, 256-FREQ/24/393%256, //5 suo
+    255-FREQ/24/441/256, 256-FREQ/24/441%256, //6 la
+    255-FREQ/24/495/256, 256-FREQ/24/495%256, //7 xi
+    0xff, 0xea, //0 休止符，第三个八度
+    255-FREQ/24/525/256, 256-FREQ/24/525%256, //1 do
+    255-FREQ/24/589/256, 256-FREQ/24/589%256, //2 re
+    255-FREQ/24/661/256, 256-FREQ/24/661%256, //3 mi
+    255-FREQ/24/700/256, 256-FREQ/24/700%256, //4 fa
+    255-FREQ/24/786/256, 256-FREQ/24/786%256, //5 suo
+    255-FREQ/24/882/256, 256-FREQ/24/882%256, //6 la
+    255-FREQ/24/990/256, 256-FREQ/24/990%256, //7 xi
+    0xff, 0xea, //0 休止符，第四个八度
+    255-FREQ/24/1049/256, 256-FREQ/24/1049%256, //1 do
+    255-FREQ/24/1178/256, 256-FREQ/24/1178%256, //2 re
+    255-FREQ/24/1322/256, 256-FREQ/24/1322%256, //3 mi
+    255-FREQ/24/1400/256, 256-FREQ/24/1400%256, //4 fa
+    255-FREQ/24/1572/256, 256-FREQ/24/1572%256, //5 suo
+    255-FREQ/24/1665/256, 256-FREQ/24/1665%256, //6 la
+    255-FREQ/24/1869/256, 256-FREQ/24/1869%256, //7 xi
+};
+unsigned char code music_frequp_tab[64]= { //升半音，每个八度 16 个字节
+    0xff, 0xea, //0 休止符，第一个八度
+    255-FREQ/24/139/256, 256-FREQ/24/139%256, //1 do
+    255-FREQ/24/156/256, 256-FREQ/24/156%256, //2 re
+    255-FREQ/24/175/256, 256-FREQ/24/175%256, //3 mi
+    255-FREQ/24/185/256, 256-FREQ/24/185%256, //4 fa
+    255-FREQ/24/208/256, 256-FREQ/24/208%256, //5 suo
+    255-FREQ/24/234/256, 256-FREQ/24/234%256, //6 la
+    255-FREQ/24/262/256, 256-FREQ/24/262%256, //7 xi
+    0xff, 0xea, //0 休止符，第二个八度
+    255-FREQ/24/278/256, 256-FREQ/24/278%256, //1 do
+    255-FREQ/24/312/256, 256-FREQ/24/312%256, //2 re
+    255-FREQ/24/350/256, 256-FREQ/24/350%256, //3 mi
+    255-FREQ/24/371/256, 256-FREQ/24/371%256, //4 fa
+    255-FREQ/24/416/256, 256-FREQ/24/416%256, //5 suo
+    255-FREQ/24/467/256, 256-FREQ/24/467%256, //6 la
+    255-FREQ/24/525/256, 256-FREQ/24/525%256, //7 xi
+    0xff, 0xea, //0 休止符，第三个八度
+    255-FREQ/24/556/256, 256-FREQ/24/556%256, //1 do
+    255-FREQ/24/624/256, 256-FREQ/24/624%256, //2 re
+    255-FREQ/24/700/256, 256-FREQ/24/700%256, //3 mi
+    255-FREQ/24/742/256, 256-FREQ/24/742%256, //4 fa
+    255-FREQ/24/833/256, 256-FREQ/24/833%256, //5 suo
+    255-FREQ/24/935/256, 256-FREQ/24/935%256, //6 la
+    255-FREQ/24/1049/256, 256-FREQ/24/1049%256, //7 xi
+    0xff, 0xea, //0 休止符，第四个八度
+    255-FREQ/24/1112/256, 256-FREQ/24/1112%256, //1 do
+    255-FREQ/24/1248/256, 256-FREQ/24/1248%256, //2 re
+    255-FREQ/24/1400/256, 256-FREQ/24/1400%256, //3 mi
+    255-FREQ/24/1484/256, 256-FREQ/24/1484%256, //4 fa
+    255-FREQ/24/1618/256, 256-FREQ/24/1618%256, //5 suo
+    255-FREQ/24/1764/256, 256-FREQ/24/1764%256, //6 la
+    255-FREQ/24/1968/256, 256-FREQ/24/1968%256, //7 xi
+};
+void delay(unsigned int ms) //延时 ms 毫秒
+{
+    unsigned char i, j;
+    while(ms--)
+        for(i=0; i<2; i++)
+            for(j=0; j<122; j++);
+}
+void decoding(unsigned char keynum) //对音乐数据进行解码
+{
+    //unsignedchar tunenote; 音高
+
+    unsigned char duration; //音符拍数
+    unsigned char badu; //音符为第几个八度
+    unsigned char yinfu; //哪个音符
+    //tunenote=; //第一个字节为音符
+    duration= 0x20;//第二个字节为音符长度 一拍
+    badu =(keynum +(!shift)*16)/8;//(tunenote&0x30)>>4; //确定音符属于第几个八度
+    yinfu=(keynum+1)%8; //确定音符的是一个八度里的第几个音
+		//lcd(yinfu,shenghao,badu);
+    if(!shenghao) { //有升号
+        tune_TH=music_frequp_tab[badu*16+yinfu*2]; //每个八度 16 个字节，每个音符对应的定时器初值是 2 个字节
+        tune_TL=music_frequp_tab[badu*16+yinfu*2+1];
+    }
+    else {//没有升号
+        tune_TH=music_freq_tab[badu*16+yinfu*2]; //每个八度 16 个字节，每个音符对应的定时器初值是 2 个字节
+        tune_TL=music_freq_tab[badu*16+yinfu*2+1];
+    }
+    dura_TH=(65536-duration*1000)/256; //音符的时长以 1ms*duration 为单位
+    dura_TL=(65536-duration*1000)%256;
+		lcd(yinfu,shenghao,badu);
+}
+//---------------------------------------------------------------------------//
+void music_play() //音乐
+{
+
+    TH1=0xff;
+    TL1=0xff;
+    TR1=1;
+
+}
+void music_tune(void) interrupt 1 //定时器 0，控制音调
+{
+    SPEAKER=~SPEAKER;
+    TH0=tune_TH;
+    TL0=tune_TL;
+}
+void music_dura(void) interrupt 3 //定时器 1，控制音长
+{
+
+    read_key();
+    if(keynum==20)
+    {
+        TR0 = 0;
+        SPEAKER = 0;
+        TH1=0xff;
+        TL1=0xff;
+				TR1 =1;
+				init();
+    }
+
+    else
+    {
+        decoding(keynum);
+        TH0=tune_TH;
+        TL0=tune_TL;
+        TR0=1;//启动计数
+        TH1=dura_TH;
+        TL1=dura_TL;
+    }
+}

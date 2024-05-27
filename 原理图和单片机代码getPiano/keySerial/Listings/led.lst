@@ -1,0 +1,43 @@
+C51 COMPILER V9.59.0.0   LED                                                               11/03/2022 23:11:45 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\led.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE led.c OMF2 OPTIMIZE(0,SPEED) BROWSE DEBUG PRINT(.\Listings\led.lst) OBJE
+                    -CT(.\Objects\led.obj)
+
+line level    source
+
+   1          //#include <STC89C5xRC.H>
+   2          #include <reg51.h>
+   3          void led_on(unsigned char num)
+   4          {
+   5   1              if(num<8) num--;        //第一个音  选择0端口
+   6   1              num = num<<3; 
+   7   1              
+   8   1              P2 = P2&0x07|num|0x80;//开灯
+   9   1              
+  10   1      }
+  11          void led_off_teach()
+  12          {
+  13   1              unsigned char num = 0;
+  14   1              P2 = P2&0x7;//关灯
+  15   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     50    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

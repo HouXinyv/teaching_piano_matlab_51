@@ -1,0 +1,10 @@
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    11/03/2022  23:06:14  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
+D:\C51\C51\BIN\BL51.EXE .\Objects\STARTUP.obj, .\Objects\main.obj, .\Objects\anjian.obj, .\Objects\data.obj, .\Objects\l
+>> cd.obj, .\Objects\teach.obj, .\Objects\UART.obj, .\Objects\led.obj TO .\Objects\piano PRINT (.\Listings\piano.m51)
+
+
+*** FATAL ERROR L218: NOT AN OBJECT FILE
+    FILE: .\Objects\STARTUP.obj

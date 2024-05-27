@@ -1,0 +1,107 @@
+C51 COMPILER V9.59.0.0   TEACH                                                             11/10/2022 18:22:19 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TEACH
+OBJECT MODULE PLACED IN .\Objects\teach.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE teach.c OMF2 OPTIMIZE(0,SPEED) BROWSE DEBUG PRINT(.\Listings\teach.lst) 
+                    -OBJECT(.\Objects\teach.obj)
+
+line level    source
+
+   1          //#include <STC89C5xRC.H>
+   2          #include <reg51.h>
+   3          #include "teach.h"
+   4          #include "data.h"
+   5          #include "anjian.h"
+   6          #include "led.h"
+   7          #include "data.h"
+   8          #include "math.h"
+   9          #include "uart.h"
+  10          //后续改进创新：两个灯亮，教学连续性，哦不过那需要双色光按钮，算了
+  11          void teach(unsigned char id)
+  12          {       
+  13   1              
+  14   1              char *p = &music[id-1][0];
+  15   1              char test = *p;
+  16   1              char temp;
+  17   1              unsigned char ucTemp;
+  18   1              //led_on(2);
+  19   1              while(*p!=0)//终止符0表示整首歌曲的结尾
+  20   1              {       
+  21   2                      temp = *p;
+  22   2                      ucTemp=1;
+  23   2                      temp = temp<0?(abs(temp)-3):(temp+4);//第一个音是4,转换曲谱            
+  24   2                      ucTemp = (unsigned char)temp;
+  25   2                      led_on(ucTemp);
+  26   2                      while(read_key() != ucTemp && nextMusic==0 && practice==0 );//
+  27   2                      if(nextMusic) 
+  28   2                              {
+  29   3                                      nextMusic=0;
+  30   3                                      led_off_teach();
+  31   3                                      break;
+  32   3                              }
+  33   2                      if(practice) 
+  34   2                              {
+  35   3                                      led_off_teach();
+  36   3                                      break;
+  37   3                              }
+  38   2                      UART_SendByte(ucTemp);
+  39   2                      p++;
+  40   2                      led_off_teach();//关闭所有琴键上的灯
+  41   2              }
+  42   1              led_off_teach();//关闭所有琴键上的灯
+  43   1      }
+  44          
+  45          //char teach(unsigned char id)
+  46          //{     
+  47          //      
+  48          //      char *p = music[id-1];
+  49          //      char test = *p;
+  50          //      //led_on(2);
+  51          //      while(*p!=0)//终止符0表示整首歌曲的结尾
+  52          //      {       
+  53          //              char temp = *p;
+  54          //              unsigned char ucTemp=1;
+C51 COMPILER V9.59.0.0   TEACH                                                             11/10/2022 18:22:19 PAGE 2   
+
+  55          //              temp = temp<0?(abs(temp)-3):(temp+4);//第一个音是4,转换曲谱            
+  56          //              ucTemp = (unsigned char)temp;
+  57          //              led_on(ucTemp);
+  58          //              while(read_key()!= ucTemp && nextMusic==0 && practice==0 );//
+  59          //              if(nextMusic) 
+  60          //                      {
+  61          //                              nextMusic=0;
+  62          //                              led_off_teach();
+  63          //                              led_off_teach();
+  64          //                              return 0;
+  65          //                      }
+  66          //              if(practice) 
+  67          //                      {
+  68          //                              led_off_teach();
+  69          //                              return 0;
+  70          //                      }
+  71          //              UART_SendByte(ucTemp);
+  72          //              p++;
+  73          //              led_off_teach();//关闭所有琴键上的灯
+  74          //      }
+  75          //      led_off_teach();//关闭所有琴键上的灯
+  76          //      return 1;
+  77          //}
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    210    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      7    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

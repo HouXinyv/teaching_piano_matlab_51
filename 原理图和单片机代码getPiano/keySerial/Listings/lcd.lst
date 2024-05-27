@@ -1,0 +1,92 @@
+C51 COMPILER V9.59.0.0   LCD                                                               11/10/2022 18:22:19 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\lcd.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE lcd.c OMF2 OPTIMIZE(0,SPEED) BROWSE DEBUG PRINT(.\Listings\lcd.lst) OBJE
+                    -CT(.\Objects\lcd.obj)
+
+line level    source
+
+   1          //#include <STC89C5xRC.H>
+   2          #include <reg51.h>
+   3          #include "lcd.h"
+   4          #include "data.h"
+   5          unsigned char yinfusz[7]="1234567";
+   6          unsigned char badusz[4][3]= {"du1","du2","du3","du4"};
+   7          unsigned char sh[]="# ";
+   8          sbit RS=P2^0;
+   9          sbit RW=P2^1;
+  10          sbit EN=P2^2;
+  11          void delay3(unsigned int a)
+  12          {
+  13   1          while(a--);
+  14   1      }
+  15          void write_com(unsigned char com) //写指令函数
+  16          {
+  17   1          P0 = com; //指令代码送入端口
+  18   1          RS = 0; //模拟写指令时序
+  19   1          RW = 0;
+  20   1          EN = 1;
+  21   1          delay(20);
+  22   1          EN = 0;
+  23   1      }
+  24          
+  25          
+  26          void write_dat(unsigned char dat) //写数据函数
+  27          {
+  28   1          P0 = dat; //数据存入端口
+  29   1          RS=1; //模拟写数据时序
+  30   1          RW=0;
+  31   1          EN=1;
+  32   1          delay(200);
+  33   1          EN=0;
+  34   1      }
+  35          void init()
+  36          {
+  37   1          write_com(0x01); //清屏
+  38   1          write_com(0x38); //设置显示为 16*2 行，5*7 点阵
+  39   1          write_com(0x0f); //开显示，显示光标且闪烁
+  40   1          write_com(0x06); //写入数据时光标右移 1 位
+  41   1      }
+  42          void lcd(unsigned char yinfu,unsigned char shao,unsigned char badu)
+  43          {
+  44   1          unsigned char i;
+  45   1          //unsigned char datastr[3];
+  46   1          init();
+  47   1          write_com(0x80); //起点为第一行第一个字符
+  48   1          write_dat(yinfusz[yinfu-1]);
+  49   1          write_dat(sh[shao]);
+  50   1          write_com(0xc0);
+  51   1      
+  52   1          for(i=0; i<3; i++) {
+  53   2              if(badusz[badu][i]=='\0') break;
+  54   2              write_dat(badusz[badu][i]);
+C51 COMPILER V9.59.0.0   LCD                                                               11/10/2022 18:22:19 PAGE 2   
+
+  55   2              //delay(20000);
+  56   2          }
+  57   1          
+  58   1      
+  59   1          write_com(0x0c); //关光标
+  60   1                      //delay(2);
+  61   1      
+  62   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    192    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     30    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

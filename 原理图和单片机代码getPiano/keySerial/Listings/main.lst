@@ -1,0 +1,66 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              11/10/2022 18:22:18 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OMF2 OPTIMIZE(0,SPEED) BROWSE DEBUG PRINT(.\Listings\main.lst) OB
+                    -JECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include "anjian.h"
+   3          #include "data.h"
+   4          //#include <STC89C5xRC.H>
+   5          #include "lcd.h"
+   6          #include "uart.h"
+   7          #include "led.h"
+   8          #include "teach.h"
+   9          //数据定义：
+  10          //音符码格式: | D7 | D6 | D5 D4 | D3 | D2 D1 D0 |
+  11          // |升降 |空闲 | 八度 |空闲 | 音符 |
+  12          //音符长度： | D7 D6 | D5 | D4 | D3 | D2 | D1 | D0 |
+  13          // |空闲 |空闲 | 全 |二分 |四分|八分|16 分|32 分|
+  14          
+  15          //函数定义:
+  16          
+  17          void main(void)
+  18          {
+  19   1              UART_Init();
+  20   1              keyInit();
+  21   1      //      PLED = 1;//默认练习灯打开        
+  22   1      
+  23   1              //led_on(4);
+  24   1              while(1)
+  25   1              {
+  26   2                      //UART_SendByte(3);
+  27   2                      while(practice)
+  28   2                      {
+  29   3                              read_key();
+  30   3                              if(keynum!=20)
+  31   3                              UART_SendByte(keynum);
+  32   3                      }
+  33   2                      while(Teach)
+  34   2                      {                       
+  35   3                              teach(MusicID); //教这首音乐，教完函数跳出          
+  36   3                      }
+  37   2              }  
+  38   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     44    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,199 @@
+C51 COMPILER V9.59.0.0   ANJIAN                                                            11/10/2022 19:28:26 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ANJIAN
+OBJECT MODULE PLACED IN .\Objects\anjian.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE anjian.c OMF2 OPTIMIZE(0,SPEED) BROWSE DEBUG PRINT(.\Listings\anjian.lst
+                    -) OBJECT(.\Objects\anjian.obj)
+
+line level    source
+
+   1          //#include <STC89C5xRC.H>
+   2          #include <reg51.h>
+   3          #include "anjian.h"
+   4          #include "data.h"
+   5          #include "uart.h"
+   6          sbit PLED = P3^6;//练习灯
+   7          sbit NEXT = P3^7;//换曲灯
+   8          sbit YS = P2^0;//换音色
+   9          sbit PL = P3^5;//教学，练习灯的另一个管脚
+  10          sbit PTKEY = P3^2;//练习教学按键
+  11          sbit NEXTKEY = P3^3;//下一曲按键
+  12          unsigned char keynum;
+  13          unsigned char num[]= {0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xd8,
+  14                                0x80,0x90,0x88,0x83,0xc6,0xa1,0x86,0x8e,0xff
+  15                               };
+  16          unsigned char yinSe = 30;
+  17          unsigned char yinSeNum = 3;//音色数量
+  18          unsigned char practice = 1;//默认练习模式
+  19          unsigned char Teach = 0;
+  20          unsigned char MusicID = 1;//默认第一首
+  21          unsigned char musicNum = 4;//音乐数量
+  22          unsigned char nextMusic = 0;//换音乐的标志符     
+  23                                   
+  24          void delay2(unsigned int a)
+  25          {
+  26   1          while(a--);
+  27   1      }
+  28          void keyInit()//初始化  练习/教学
+  29          {
+  30   1              EA = 1;//打开总中断开关
+  31   1              EX0 = 1;//开外部中断0
+  32   1              IT0 = 1;//低电平触发
+  33   1              EX1 = 1;//开外部中断0
+  34   1              IT1 = 1;//低电平触发
+  35   1              PLED = 1;PL = 0;//默认练习灯打开
+  36   1              YS = 0;
+  37   1              NEXT = 0;
+  38   1      }
+  39          unsigned char  read_key(void)
+  40          {
+  41   1          unsigned char key;
+  42   1          key=keyscan(); //键盘扫描，
+  43   1          switch(key) {
+  44   2          case 0x77:
+  45   2              keynum=1;
+  46   2              break;
+  47   2          case 0xb7:
+  48   2              keynum=2;
+  49   2              break;
+  50   2          case 0xd7:
+  51   2              keynum=3;
+  52   2              break;
+  53   2          case 0xe7:
+  54   2              keynum=4;
+C51 COMPILER V9.59.0.0   ANJIAN                                                            11/10/2022 19:28:26 PAGE 2   
+
+  55   2              break;
+  56   2          case 0x7b:
+  57   2              keynum=5;
+  58   2              break;
+  59   2          case 0xbb:
+  60   2              keynum=6;
+  61   2              break;
+  62   2          case 0xdb:
+  63   2              keynum=7;
+  64   2              break;
+  65   2          case 0xeb://换音色
+  66   2                      YS = 1;
+  67   2              keynum=20;
+  68   2                      if(yinSe==30+yinSeNum)
+  69   2                              yinSe=30;
+  70   2                      UART_SendByte(yinSe++);//30表示默认音色，第一次换音，31；最大音色是音色数量
+  71   2                      delay(100);
+  72   2                      YS = 0;
+  73   2              break;
+  74   2          case 0x7d:
+  75   2              keynum=8;
+  76   2              break;
+  77   2          case 0xbd:
+  78   2              keynum=9;
+  79   2              break;
+  80   2          case 0xdd:
+  81   2              keynum=10;
+  82   2              break;
+  83   2          case 0xed:
+  84   2              keynum=11;
+  85   2              break;
+  86   2          case 0x7e:
+  87   2              keynum=12;
+  88   2              break;
+  89   2          case 0xbe:
+  90   2              keynum=13;
+  91   2              break;
+  92   2          case 0xde:
+  93   2              keynum=14;
+  94   2              break;
+  95   2          case 0xee:
+  96   2              keynum=20;
+  97   2              break;
+  98   2          case 0xff:
+  99   2              keynum=20;
+ 100   2              break;
+ 101   2          }
+ 102   1              key = keynum;
+ 103   1              return key;
+ 104   1      }
+ 105          unsigned char keyscan(void)
+ 106          {
+ 107   1          unsigned char cord_h,cord_l;//行列值中间变量
+ 108   1          P1=0x0f; //行线输出全为 1，列线输出全为 0
+ 109   1          cord_h=P1&0x0f; //读入行线值
+ 110   1          if(cord_h!=0x0f) //先检测有无按键按下//
+ 111   1                      delay(10); //去抖
+ 112   1          cord_h=P1&0x0f; //读入行线值
+ 113   1          //  if(cord_h!=0x0f) {
+ 114   1          P1=0xf0; //列线输出全为 1，行线输出全为 0
+ 115   1          cord_l=P1&0xf0; //读入列线值
+ 116   1          //P1=0x0f;
+C51 COMPILER V9.59.0.0   ANJIAN                                                            11/10/2022 19:28:26 PAGE 3   
+
+ 117   1              while(P1 != 0xf0);//新加
+ 118   1              //while((P1&0x0f)!=0x0f); //等待按键释放注释后串口不能用，不注释教学不能用，妈�
+             -�
+ 119   1              //delay(10);
+ 120   1          return(cord_h+cord_l); //键盘最后组合码值
+ 121   1          //   }
+ 122   1          //}
+ 123   1          //return(0xff); //返回无键按下的值
+ 124   1      }
+ 125          
+ 126          //两个按键的中断
+ 127          void  pt() interrupt 0   // 练习/教学
+ 128          {
+ 129   1              delay2(10);
+ 130   1              if(PTKEY==0)
+ 131   1              {
+ 132   2                      practice = !practice;
+ 133   2                      Teach = !Teach;         
+ 134   2                      PLED = ~PLED;           
+ 135   2                      PL = ~PL;
+ 136   2              }
+ 137   1              if(Teach == 1)//
+ 138   1              {//
+ 139   2                      UART_SendByte(MusicID+50);//
+ 140   2              }//
+ 141   1              else //
+ 142   1              {//
+ 143   2                      UART_SendByte(49);//
+ 144   2              }//
+ 145   1      }
+ 146          void next() interrupt 2  // next换音乐
+ 147          {
+ 148   1              delay2(10);
+ 149   1              if(NEXTKEY==0)
+ 150   1              {
+ 151   2                      if(Teach)
+ 152   2                      {
+ 153   3                              NEXT = 1;
+ 154   3                              MusicID++;
+ 155   3                              nextMusic = 1;  
+ 156   3                              if(MusicID>musicNum)
+ 157   3                              MusicID = 1;    //默认1，原本写的0，傻
+ 158   3                              delay(100);
+ 159   3                              NEXT = 0;
+ 160   3                              UART_SendByte(MusicID+50);//
+ 161   3                      }
+ 162   2              }
+ 163   1      }
+ 164          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    524    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     30    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+C51 COMPILER V9.59.0.0   ANJIAN                                                            11/10/2022 19:28:26 PAGE 4   
+
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

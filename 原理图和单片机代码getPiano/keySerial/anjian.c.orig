@@ -1,0 +1,88 @@
+#include <reg51.h>
+#include "anjian.h"
+#include "data.h"
+unsigned char keynum;
+unsigned char num[]= {0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xd8,
+                      0x80,0x90,0x88,0x83,0xc6,0xa1,0x86,0x8e,0xff
+                     };
+void delay2(unsigned int a)
+{
+    while(a--);
+}
+
+void read_key(void)
+{
+    unsigned char key;
+    key=keyscan(); //键盘扫描，
+    switch(key) {
+    case 0x77:
+        keynum=0;
+        break;
+    case 0xb7:
+        keynum=1;
+        break;
+    case 0xd7:
+        keynum=2;
+        break;
+    case 0xe7:
+        keynum=3;
+        break;
+    case 0x7b:
+        keynum=4;
+        break;
+    case 0xbb:
+        keynum=5;
+        break;
+    case 0xdb:
+        keynum=6;
+        break;
+    case 0xeb:
+        keynum=20;
+        break;
+    case 0x7d:
+        keynum=8;
+        break;
+    case 0xbd:
+        keynum=9;
+        break;
+    case 0xdd:
+        keynum=10;
+        break;
+    case 0xed:
+        keynum=11;
+        break;
+    case 0x7e:
+        keynum=12;
+        break;
+    case 0xbe:
+        keynum=13;
+        break;
+    case 0xde:
+        keynum=14;
+        break;
+    case 0xee:
+        keynum=20;
+        break;
+		case 0xff:
+			  keynum=20;
+				break;
+    }
+}
+unsigned char keyscan(void)
+{
+    unsigned char cord_h,cord_l;//行列值中间变量
+    P1=0x0f; //行线输出全为 1，列线输出全为 0
+    cord_h=P1&0x0f; //读入行线值
+    //if(cord_h!=0x0f) { //先检测有无按键按下
+       // delay2(10); //去抖
+        cord_h=P1&0x0f; //读入行线值
+      //  if(cord_h!=0x0f) {
+            P1=0xf0; //列线输出全为 1，行线输出全为 0
+            cord_l=P1&0xf0; //读入列线值
+            P1=0x0f;
+           // while((P1&0x0f)!=0x0f); //等待按键释放
+            return(cord_h+cord_l); //键盘最后组合码值
+     //   }
+    //}
+    //return(0xff); //返回无键按下的值
+}

@@ -1,0 +1,11 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\anjian.obj",
+".\Objects\data.obj",
+".\Objects\lcd.obj",
+".\Objects\teach.obj",
+".\Objects\UART.obj",
+".\Objects\led.obj" 
+TO ".\Objects\piano" 
+
+PRINT(".\Listings\piano.map")
